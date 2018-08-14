@@ -32,7 +32,10 @@
             this.PictureListBox = new System.Windows.Forms.ListBox();
             this.AccountPictureBox = new System.Windows.Forms.PictureBox();
             this.DetectButton = new System.Windows.Forms.Button();
+            this.StatusBar = new System.Windows.Forms.StatusStrip();
+            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.AccountPictureBox)).BeginInit();
+            this.StatusBar.SuspendLayout();
             this.SuspendLayout();
             // 
             // ExitButton
@@ -40,7 +43,7 @@
             this.ExitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ExitButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.ExitButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ExitButton.Location = new System.Drawing.Point(906, 685);
+            this.ExitButton.Location = new System.Drawing.Point(906, 672);
             this.ExitButton.Name = "ExitButton";
             this.ExitButton.Size = new System.Drawing.Size(90, 32);
             this.ExitButton.TabIndex = 0;
@@ -56,7 +59,7 @@
             this.PictureListBox.ItemHeight = 21;
             this.PictureListBox.Location = new System.Drawing.Point(12, 12);
             this.PictureListBox.Name = "PictureListBox";
-            this.PictureListBox.Size = new System.Drawing.Size(120, 697);
+            this.PictureListBox.Size = new System.Drawing.Size(120, 676);
             this.PictureListBox.TabIndex = 1;
             this.PictureListBox.SelectedIndexChanged += new System.EventHandler(this.PictureListBox_SelectedIndexChanged);
             this.PictureListBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.PictureListBox_DragDrop);
@@ -69,7 +72,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.AccountPictureBox.Location = new System.Drawing.Point(138, 12);
             this.AccountPictureBox.Name = "AccountPictureBox";
-            this.AccountPictureBox.Size = new System.Drawing.Size(858, 667);
+            this.AccountPictureBox.Size = new System.Drawing.Size(858, 654);
             this.AccountPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.AccountPictureBox.TabIndex = 2;
             this.AccountPictureBox.TabStop = false;
@@ -79,12 +82,27 @@
             this.DetectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.DetectButton.BackColor = System.Drawing.Color.PaleGreen;
             this.DetectButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.DetectButton.Location = new System.Drawing.Point(810, 685);
+            this.DetectButton.Location = new System.Drawing.Point(810, 672);
             this.DetectButton.Name = "DetectButton";
             this.DetectButton.Size = new System.Drawing.Size(90, 32);
             this.DetectButton.TabIndex = 3;
             this.DetectButton.Text = "Detect";
             this.DetectButton.UseVisualStyleBackColor = false;
+            // 
+            // StatusBar
+            // 
+            this.StatusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabel});
+            this.StatusBar.Location = new System.Drawing.Point(0, 707);
+            this.StatusBar.Name = "StatusBar";
+            this.StatusBar.Size = new System.Drawing.Size(1008, 22);
+            this.StatusBar.TabIndex = 4;
+            this.StatusBar.Text = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Size = new System.Drawing.Size(0, 17);
             // 
             // MainForm
             // 
@@ -92,6 +110,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ExitButton;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.StatusBar);
             this.Controls.Add(this.DetectButton);
             this.Controls.Add(this.AccountPictureBox);
             this.Controls.Add(this.PictureListBox);
@@ -103,7 +122,10 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MainForm";
             ((System.ComponentModel.ISupportInitialize)(this.AccountPictureBox)).EndInit();
+            this.StatusBar.ResumeLayout(false);
+            this.StatusBar.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -113,6 +135,8 @@
         private System.Windows.Forms.ListBox PictureListBox;
         private System.Windows.Forms.PictureBox AccountPictureBox;
         private System.Windows.Forms.Button DetectButton;
+        private System.Windows.Forms.StatusStrip StatusBar;
+        private System.Windows.Forms.ToolStripStatusLabel StatusLabel;
     }
 }
 

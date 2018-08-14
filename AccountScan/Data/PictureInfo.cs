@@ -9,6 +9,7 @@ namespace AccountScan.Data
         private string PageName { get; set; }
 
         public byte[] Image { get; set; }
+        public Rectangle Region { get; set; }
         public Bitmap Bitmap
         {
             get

@@ -2,8 +2,6 @@
 using Emgu.CV.CvEnum;
 using Emgu.CV.OCR;
 using System;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace AccountScan.Util
 {
@@ -11,7 +9,7 @@ namespace AccountScan.Util
     {
         private const string TESTDATA = "/Resources/tesseract-ocr/tessdata/";
 
-        public static string Recognize(Mat mat, string lang = "eng")
+        public static Tesseract.Character[] Recognize(Mat mat, string lang = "eng")
         {
             var baseDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\').Replace('\\', '/');
             var testData = baseDir + TESTDATA;
@@ -21,16 +19,8 @@ namespace AccountScan.Util
             {
                 tesseract.SetImage(mat);
                 var i = tesseract.Recognize();
-                var text = tesseract.GetUTF8Text();
-                var charList = tesseract.GetCharacters();
 
-                foreach (var ch in charList)
-                {
-                    var reg = ch.Region;
-
-                    Debug.Print($"[{ch.Text}]");
-                }
-                return Regex.Replace(text, "\\s+", "");
+                return tesseract.GetCharacters();
             }
         }
     }
