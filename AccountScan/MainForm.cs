@@ -2,6 +2,7 @@
 using AccountScan.Util;
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -26,11 +27,20 @@ namespace AccountScan
             {
                 return;
             }
+            var sw = new Stopwatch();
             var detector = new AccountDetector();
 
-            info.Region = detector.DetectTarget(info, (y, text) => {
-                SetStatusLabel($"y={y}:[{text}]");
-            });
+            sw.Start();
+            SetStatusLabel("検出しています...");
+            info.Region = detector.DetectTarget(info);
+            sw.Stop();
+            if (info.Region.IsEmpty)
+            {
+                SetStatusLabel("検出失敗。");
+                return;
+            }
+            var ts = sw.Elapsed;
+            SetStatusLabel($"検出しました。[{ts.TotalSeconds}]");
             SetPicture(info);
         }
         #endregion
@@ -43,7 +53,8 @@ namespace AccountScan
 
             if (!region.IsEmpty)
             {
-                var clipRect = new Rectangle(0, region.Bottom, bmp.Width, CLIP_HEIGHT);
+                var width = bmp.Width - CLIP_PADDING * 2;
+                var clipRect = new Rectangle(CLIP_PADDING, region.Top, width, CLIP_HEIGHT);
 
                 using (var g = Graphics.FromImage(bmp))
                 using (var red = new Pen(Color.Red, 5))
@@ -51,6 +62,17 @@ namespace AccountScan
                 {
                     g.DrawRectangle(red, info.Region);
                     g.DrawRectangle(green, clipRect);
+                }
+            }
+            else
+            {
+                var x = AccountDetector.DETECT_LEFT_MARGIN + (int)(info.Width * AccountDetector.DETECT_HORIZONTAL_RATIO);
+                var y = (int)(info.Height * AccountDetector.DETECT_VERTICAL_RATIO);
+
+                using (var g = Graphics.FromImage(bmp))
+                using (var blue = new Pen(Color.Blue, 4) { DashStyle = DashStyle.Dash })
+                {
+                    g.DrawRectangle(blue, new Rectangle(0, 0, x, y));
                 }
             }
             AccountPictureBox.Image?.Dispose();
@@ -62,16 +84,16 @@ namespace AccountScan
         private void AddPage(string filename)
         {
             var imgconv = new ImageConverter();
-            byte[] bytes;
 
             using (var img = Image.FromFile(filename))
             {
-                bytes = (byte[])imgconv.ConvertTo(img, typeof(byte[]));
+                PictureListBox.Items.Add(new PictureInfo(filename)
+                {
+                    Image = (byte[])imgconv.ConvertTo(img, typeof(byte[])),
+                    Width = img.Width,
+                    Height = img.Height,
+                });
             }
-            PictureListBox.Items.Add(new PictureInfo(filename)
-            {
-                Image = bytes,
-            });
         }
 
         private void SelectLatestItem()
@@ -130,7 +152,9 @@ namespace AccountScan
         #endregion
 
         #region Member
-        private const int CLIP_HEIGHT = 450;
+        private const int CLIP_HEIGHT = 480;
+        private const int CLIP_PADDING = 200;
         #endregion
     }
 }
+

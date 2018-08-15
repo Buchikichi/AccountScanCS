@@ -2,76 +2,107 @@
 using Emgu.CV;
 using Emgu.CV.Structure;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace AccountScan.Util
 {
     class AccountDetector
     {
-        public Rectangle DetectTarget(PictureInfo info, Action<int, string> act)
+        #region Method
+        private Rectangle Detect(Mat clip)
         {
-            var region = new Rectangle();
+            var region = default(Rectangle);
+            var text = string.Empty;
+            var charList = OcrUtils.Recognize(clip, "jpn");
 
-            using (var img = info.Bitmap)
-            using (var mat = new Image<Bgr, byte>(img).Mat)
+            foreach (var ch in charList)
             {
-                var width = img.Width / 4;
-                var maxY = img.Height - DETECT_HEIGHT;
-                var y = 0;
-
-                while (y < maxY)
+                if (string.IsNullOrWhiteSpace(ch.Text) || !TARGET_STRING.Contains(ch.Text))
                 {
-                    var rect = new Rectangle(DETECT_LEFT_MARGIN, y, width, DETECT_HEIGHT);
-                    var hit = false;
-                    var text = string.Empty;
-
-                    region.X = 0;
-                    act(y, string.Empty);
-                    using (var clip = new Mat(mat, rect))
-                    {
-                        var charList = OcrUtils.Recognize(clip, "jpn");
-
-                        foreach (var ch in charList)
-                        {
-                            if (string.IsNullOrWhiteSpace(ch.Text) || !TARGET_STRING.Contains(ch.Text))
-                            {
-                                continue;
-                            }
-                            hit = true;
-                            text += ch.Text;
-                            CvInvoke.Rectangle(clip, ch.Region, new Bgr(Color.Green).MCvScalar);
-                            if (region.X == 0)
-                            {
-                                region = ch.Region;
-                            }
-                            else
-                            {
-                                region = Rectangle.Union(region, ch.Region);
-                            }
-                        }
-                        act(y, string.Empty);
-                        hit = text.Contains("\u5ea7\u767b");
-                        if (hit)
-                        {
-                            CvInvoke.Imshow("source", clip);
-                        }
-                    }
-                    if (hit)
-                    {
-                        region.Offset(DETECT_LEFT_MARGIN, y);
-                        break;
-                    }
-                    y += DETECT_STEP;
+                    continue;
                 }
+                text += ch.Text;
+                CvInvoke.Rectangle(clip, ch.Region, new Bgr(Color.Green).MCvScalar);
+                if (region.X == 0)
+                {
+                    region = ch.Region;
+                }
+                else
+                {
+                    region = Rectangle.Union(region, ch.Region);
+                }
+            }
+            if (!text.Contains("\u5ea7\u767b"))
+            {
+                region = default(Rectangle);
             }
             return region;
         }
 
+        private Rectangle Detect(PictureInfo info, int y)
+        {
+            var detectWidth = (int)(info.Width * DETECT_HORIZONTAL_RATIO);
+            var rect = new Rectangle(DETECT_LEFT_MARGIN, y, detectWidth, DETECT_HEIGHT);
+
+            using (var img = info.Bitmap)
+            using (var mat = new Image<Bgr, byte>(img).Mat)
+            using (var clip = new Mat(mat, rect))
+            {
+                var region = Detect(clip);
+
+                if (!region.IsEmpty)
+                {
+                    region.Offset(DETECT_LEFT_MARGIN, y);
+                }
+                return region;
+            }
+        }
+
+        public Rectangle DetectTarget(PictureInfo info)
+        {
+            var region = new Rectangle();
+            var taskList = new List<Task>();
+            var maxY = info.Height * DETECT_VERTICAL_RATIO;
+
+            for (var y = 0; y < maxY; y += DETECT_STEP)
+            {
+                var localY = y;
+                var task = Task.Run(() =>
+                {
+                    try
+                    {
+                        var rect = Detect(info, localY);
+
+                        if (rect.IsEmpty || !region.IsEmpty && region.Bottom < rect.Bottom)
+                        {
+                            return;
+                        }
+                        region = rect;
+                        //Debug.Print($"region[{rect}]{rect.Bottom}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print($"error[{ex.Message}]");
+                    }
+                });
+                taskList.Add(task);
+            }
+            Task.WhenAll(taskList).Wait(10000);
+            return region;
+        }
+        #endregion
+
         #region Member
         private const int DETECT_HEIGHT = 250;
         private const int DETECT_STEP = DETECT_HEIGHT / 2;
-        private const int DETECT_LEFT_MARGIN = 250;
         private const string TARGET_STRING = "\u632f\u8fbc\u53e3\u5ea7\u767b\u9332";
+
+        public const int DETECT_LEFT_MARGIN = 250;
+        public const double DETECT_HORIZONTAL_RATIO = .2;
+        public const double DETECT_VERTICAL_RATIO = .6;
         #endregion
     }
 }
