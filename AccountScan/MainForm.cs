@@ -30,6 +30,7 @@ namespace AccountScan
             var sw = new Stopwatch();
             var detector = new AccountDetector();
 
+            Debug.Print($"Height:{info.Height}/A4:{info.IsA4}");
             sw.Start();
             SetStatusLabel("検出しています...");
             info.Region = detector.DetectTarget(info);
@@ -53,26 +54,27 @@ namespace AccountScan
 
             if (!region.IsEmpty)
             {
-                var width = bmp.Width - CLIP_PADDING * 2;
-                var clipRect = new Rectangle(CLIP_PADDING, region.Top, width, CLIP_HEIGHT);
+                var left = region.Left - CLIP_LEFT_PADDING;
+                var width = bmp.Width - left * 2;
+                var clipRect = new Rectangle(left, region.Top, width, CLIP_HEIGHT);
 
                 using (var g = Graphics.FromImage(bmp))
                 using (var red = new Pen(Color.Red, 5))
                 using (var green = new Pen(Color.Green, 5) { DashStyle = DashStyle.Dash })
                 {
-                    g.DrawRectangle(red, info.Region);
+                    g.DrawRectangle(red, region);
                     g.DrawRectangle(green, clipRect);
                 }
             }
             else
             {
-                var x = AccountDetector.DETECT_LEFT_MARGIN + (int)(info.Width * AccountDetector.DETECT_HORIZONTAL_RATIO);
-                var y = (int)(info.Height * AccountDetector.DETECT_VERTICAL_RATIO);
+                var detector = new AccountDetector();
+                var detectArea = detector.CalcDetectArea(info);
 
                 using (var g = Graphics.FromImage(bmp))
                 using (var blue = new Pen(Color.Blue, 4) { DashStyle = DashStyle.Dash })
                 {
-                    g.DrawRectangle(blue, new Rectangle(0, 0, x, y));
+                    g.DrawRectangle(blue, detectArea);
                 }
             }
             AccountPictureBox.Image?.Dispose();
@@ -153,8 +155,7 @@ namespace AccountScan
 
         #region Member
         private const int CLIP_HEIGHT = 480;
-        private const int CLIP_PADDING = 200;
+        private const int CLIP_LEFT_PADDING = 150;
         #endregion
     }
 }
-

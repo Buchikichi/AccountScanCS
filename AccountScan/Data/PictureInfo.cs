@@ -6,11 +6,29 @@ namespace AccountScan.Data
     public class PictureInfo
     {
         #region Attributes
+        // A4 300dpi 3508×2480
+        private const int A4Width = (int)(2480 * .99);
+        private const int A4Height = (int)(3508 * .99);
         private string PageName { get; set; }
 
         public byte[] Image { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
+        public bool IsA4
+        {
+            get
+            {
+                if (A4Width < Width && A4Height < Height)
+                {
+                    return true;
+                }
+                if (A4Width < Height && A4Height < Width)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
         public Rectangle Region { get; set; }
         public Bitmap Bitmap
         {

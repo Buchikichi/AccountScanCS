@@ -65,9 +65,10 @@ namespace AccountScan.Util
         {
             var region = new Rectangle();
             var taskList = new List<Task>();
-            var maxY = info.Height * DETECT_VERTICAL_RATIO;
+            var detectArea = CalcDetectArea(info);
+            var maxY = detectArea.Bottom - DETECT_STEP;
 
-            for (var y = 0; y < maxY; y += DETECT_STEP)
+            for (var y = detectArea.Top; y < maxY; y += DETECT_STEP)
             {
                 var localY = y;
                 var task = Task.Run(() =>
@@ -93,6 +94,19 @@ namespace AccountScan.Util
             Task.WhenAll(taskList).Wait(10000);
             return region;
         }
+
+        public Rectangle CalcDetectArea(PictureInfo info)
+        {
+            var width = (int)(info.Width * DETECT_HORIZONTAL_RATIO);
+            var height = (int)(info.Height * DETECT_VERTICAL_RATIO);
+
+            if (info.IsA4)
+            {
+
+                return new Rectangle(DETECT_LEFT_MARGIN, DETECT_TOP_MARGIN, width, height);
+            }
+            return new Rectangle(DETECT_LEFT_MARGIN, 0, width, height * 2);
+        }
         #endregion
 
         #region Member
@@ -100,9 +114,10 @@ namespace AccountScan.Util
         private const int DETECT_STEP = DETECT_HEIGHT / 2;
         private const string TARGET_STRING = "\u632f\u8fbc\u53e3\u5ea7\u767b\u9332";
 
-        public const int DETECT_LEFT_MARGIN = 250;
-        public const double DETECT_HORIZONTAL_RATIO = .2;
-        public const double DETECT_VERTICAL_RATIO = .6;
+        private const int DETECT_TOP_MARGIN = 1500;
+        private const int DETECT_LEFT_MARGIN = 250;
+        private const double DETECT_HORIZONTAL_RATIO = .2;
+        private const double DETECT_VERTICAL_RATIO = .18;
         #endregion
     }
 }
